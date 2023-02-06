@@ -1,0 +1,16 @@
+{
+    "name": "arsenysamoilov.ecs-core-unity-integration",
+    "rootNamespace": "SemsamECS.Core.Unity",
+    "references": [
+        "GUID:605d459620438964d811fc0a73d2cf78"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
