@@ -5,10 +5,10 @@
         [UnityEngine.SerializeField] private PooledWorldProvider _worldProvider;
         [UnityEngine.SerializeField] private bool _haveDestroyAfterConversion;
 
-        private System.Action<Pools, int>[] _delayedConversions;
+        private System.Action<IPools, int>[] _delayedConversions;
         private int _delayedConversionCount;
 
-        private Pools _pools;
+        private IPools _pools;
         private int _entity;
         private bool _isStarted;
 
@@ -40,7 +40,7 @@
 
         private void ExecuteDelayedConversions()
         {
-            var delayedConversionsAsSpan = new System.Span<System.Action<Pools, int>>(_delayedConversions, 0, _delayedConversionCount);
+            var delayedConversionsAsSpan = new System.Span<System.Action<IPools, int>>(_delayedConversions, 0, _delayedConversionCount);
             foreach (var conversion in delayedConversionsAsSpan)
                 conversion.Invoke(_pools, _entity);
         }
@@ -48,17 +48,17 @@
         private void ExecuteConversion<TComponent>(TComponent component, bool isTag) where TComponent : struct
         {
             if (isTag)
-                _pools.GetTagPool<TComponent>().Create(_entity);
+                _pools.Get<TComponent>().Create(_entity);
             else
-                _pools.GetPool<TComponent>().Create(_entity, component);
+                _pools.Get<TComponent>().Create(_entity, component);
         }
 
         private void DelayConversion<TComponent>(TComponent component, bool isTag) where TComponent : struct
         {
             if (isTag)
-                _delayedConversions[_delayedConversionCount++] = (world, entity) => world.GetTagPool<TComponent>().Create(entity);
+                _delayedConversions[_delayedConversionCount++] = (world, entity) => world.Get<TComponent>().Create(entity);
             else
-                _delayedConversions[_delayedConversionCount++] = (world, entity) => world.GetPool<TComponent>().Create(entity, component);
+                _delayedConversions[_delayedConversionCount++] = (world, entity) => world.Get<TComponent>().Create(entity, component);
         }
     }
 }
