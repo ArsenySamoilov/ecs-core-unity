@@ -1,22 +1,18 @@
-﻿using UnityEngine;
-
-namespace SemsamECS.Core.Unity
+﻿namespace SemsamECS.Core.Unity
 {
-    [RequireComponent(typeof(EntityProvider))]
-    public abstract class ComponentProvider<TComponent> : MonoBehaviour where TComponent : struct
+    /// <summary>
+    /// An abstract provider for creating a component of type <typeparamref name="TComponent"/> for an entity.
+    /// </summary>
+    public abstract class ComponentProvider<TComponent> : UnityEngine.MonoBehaviour, IComponentProvider where TComponent : struct
     {
-        [SerializeField] private EntityProvider _entityProvider;
-        [SerializeField] private TComponent _component;
-        [SerializeField] private bool _isTag;
+        [UnityEngine.SerializeField] private TComponent _component;
 
-        private void Reset()
+        /// <summary>
+        /// Creates a component for the entity using the pools.
+        /// </summary>
+        public void CreateComponent(IPools pools, int entity)
         {
-            _entityProvider = GetComponent<EntityProvider>();
-        }
-
-        private void Start()
-        {
-            _entityProvider.AddComponent(_component, _isTag);
+            pools.Get<TComponent>().Create(entity, _component);
         }
     }
 }
