@@ -5,29 +5,58 @@
     /// </summary>
     public sealed class EntityProvider : UnityEngine.MonoBehaviour
     {
-        [UnityEngine.SerializeField] private PooledWorldProvider _worldProvider;
+        [UnityEngine.SerializeField] private int _worldIndex;
         [UnityEngine.SerializeField] private bool _isDestroyingAfter;
 
-        private IPools _pools;
-        private int _entity;
+        private Worlds _worlds;
 
         private void Start()
         {
-            var world = _worldProvider.GetWorld();
-            _pools = world.Pools;
-            _entity = world.Entities.Create();
+            if (Worlds.IsCreated)
+                AttemptUseWorld(Worlds.GetInstance());
+            else
+                Worlds.Constructed += OnWorldsConstructed;
+        }
 
-            AddComponents();
+        private void OnWorldsConstructed(Worlds worlds)
+        {
+            Worlds.Constructed -= OnWorldsConstructed;
+            AttemptUseWorld(worlds);
+        }
 
+        private void AttemptUseWorld(Worlds worlds)
+        {
+            _worlds = worlds;
+            if (worlds.Have(_worldIndex))
+                ConstructEntity(worlds.Get(_worldIndex));
+            else
+                worlds.Added += OnWorldAdded;
+        }
+
+        private void OnWorldAdded(IWorld world, int index)
+        {
+            if (index != _worldIndex)
+                return;
+
+            _worlds.Added -= OnWorldAdded;
+            ConstructEntity(world);
+        }
+
+        private void ConstructEntity(IWorld world)
+        {
+            var pools = world.Pools;
+            var entity = world.Entities.Create();
+            AddComponents(pools, entity);
+            
             if (_isDestroyingAfter)
                 Destroy(gameObject);
         }
 
-        private void AddComponents()
+        private void AddComponents(IPools pools, int entity)
         {
             var components = new System.Span<IComponentProvider>(GetComponents<IComponentProvider>());
             foreach (var component in components)
-                component.CreateComponent(_pools, _entity);
+                component.CreateComponent(pools, entity);
         }
     }
 }
