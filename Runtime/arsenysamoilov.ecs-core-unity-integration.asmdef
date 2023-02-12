@@ -1,5 +1,5 @@
 {
-    "name": "arsenysamoilov.ecs-core-unity-integration",
+    "name": "arsenysamoilov.ecs-core-unity",
     "rootNamespace": "SemsamECS.Core.Unity",
     "references": [
         "GUID:605d459620438964d811fc0a73d2cf78"

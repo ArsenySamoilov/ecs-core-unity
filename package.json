@@ -1,12 +1,12 @@
 {
-  "name": "com.arsenysamoilov.ecs-core-unity-implementation",
+  "name": "com.arsenysamoilov.ecs-core-unity",
   "version": "0.5.0",
   "displayName": "Semsam ECS Core Unity",
   "description": "Entity-Component-System Core Implementation to Unity",
   "unity": "2021.3",
   "unityRelease": "3f1",
-  "documentationUrl": "https://github.com/ArsenySamoilov/ecs-core-unity-implementation/blob/main/README.md",
-  "licensesUrl": "https://github.com/ArsenySamoilov/ecs-core-unity-implementation/blob/main/LICENSE.md",
+  "documentationUrl": "https://github.com/ArsenySamoilov/ecs-core-unity/blob/main/README.md",
+  "licensesUrl": "https://github.com/ArsenySamoilov/ecs-core-unity/blob/main/LICENSE.md",
   "dependencies": {
     "com.arsenysamoilov.ecs-core": "0.7.0"
   },
