@@ -8,38 +8,36 @@
         [UnityEngine.SerializeField] private int _worldIndex;
         [UnityEngine.SerializeField] private bool _isDestroyingAfter;
 
-        private Worlds _worlds;
-
         private void Start()
         {
-            if (Worlds.IsCreated)
-                AttemptUseWorld(Worlds.GetInstance());
+            if (WorldsInstance.TryGet(out var worlds))
+                AttemptUseWorld((Worlds)worlds);
             else
-                Worlds.Constructed += OnWorldsConstructed;
+                WorldsInstance.Constructed += OnWorldsConstructed;
         }
 
         private void OnWorldsConstructed(Worlds worlds)
         {
-            Worlds.Constructed -= OnWorldsConstructed;
+            WorldsInstance.Constructed -= OnWorldsConstructed;
             AttemptUseWorld(worlds);
         }
 
         private void AttemptUseWorld(Worlds worlds)
         {
-            _worlds = worlds;
-            if (worlds.Have(_worldIndex))
-                ConstructEntity(worlds.Get(_worldIndex));
+            var worldsAsSpan = worlds.GetWorlds();
+            if (_worldIndex < worldsAsSpan.Length)
+                ConstructEntity(worldsAsSpan[_worldIndex]);
             else
-                worlds.Added += OnWorldAdded;
+                worlds.Created += OnWorldCreated;
         }
 
-        private void OnWorldAdded(IWorld world, int index)
+        private void OnWorldCreated(BoxedWorld world)
         {
-            if (index != _worldIndex)
+            if (world.Index != _worldIndex)
                 return;
 
-            _worlds.Added -= OnWorldAdded;
-            ConstructEntity(world);
+            ((Worlds)WorldsInstance.Get()).Created -= OnWorldCreated;
+            ConstructEntity(world.World);
         }
 
         private void ConstructEntity(IWorld world)
@@ -47,14 +45,14 @@
             var pools = world.Pools;
             var entity = world.Entities.Create();
             AddComponents(pools, entity);
-            
+
             if (_isDestroyingAfter)
                 Destroy(gameObject);
         }
 
         private void AddComponents(IPools pools, int entity)
         {
-            var components = new System.Span<IComponentProvider>(GetComponents<IComponentProvider>());
+            var components = new System.ReadOnlySpan<IComponentProvider>(GetComponents<IComponentProvider>());
             foreach (var component in components)
                 component.CreateComponent(pools, entity);
         }

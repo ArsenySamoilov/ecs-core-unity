@@ -6,7 +6,7 @@
     public interface IComponentProvider
     {
         /// <summary>
-        /// Creates a component for the entity using the pools.
+        /// Creates a component for the entity.
         /// </summary>
         void CreateComponent(IPools pools, int entity);
     }
