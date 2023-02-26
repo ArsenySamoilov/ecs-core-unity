@@ -13,9 +13,12 @@
         /// <summary>
         /// Creates a component for the entity.
         /// </summary>
-        public void CreateComponent(IPools pools, int entity)
+        public void CreateComponent(IPools poolContainer, int entity)
         {
-            pools.Get<TComponent>().Create(entity, _component);
+            if (poolContainer.Have<TComponent>())
+                poolContainer.Get<TComponent>().Create(entity, _component);
+            else
+                poolContainer.Create<TComponent>().Create(entity, _component);
         }
     }
 }

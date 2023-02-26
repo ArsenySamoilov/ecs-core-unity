@@ -8,6 +8,6 @@
         /// <summary>
         /// Creates a component for the entity.
         /// </summary>
-        void CreateComponent(IPools pools, int entity);
+        void CreateComponent(IPools poolContainer, int entity);
     }
 }

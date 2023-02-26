@@ -8,33 +8,33 @@
         [UnityEngine.SerializeField] private int _worldId;
         [UnityEngine.SerializeField] private bool _isDestroyingAfter;
 
-        private IWorlds _worlds;
+        private IWorlds _worldContainer;
 
         private void Start()
         {
-            if (WorldsInstance.TryGet(out var worlds))
+            if (WorldsInstance.TryGet(out var worldContainer))
             {
-                _worlds = worlds;
+                _worldContainer = worldContainer;
                 AttemptUseWorld();
             }
             else
                 WorldsInstance.Constructed += OnWorldsConstructed;
         }
 
-        private void OnWorldsConstructed(IWorlds worlds)
+        private void OnWorldsConstructed(IWorlds worldContainer)
         {
             WorldsInstance.Constructed -= OnWorldsConstructed;
-            _worlds = worlds;
+            _worldContainer = worldContainer;
             AttemptUseWorld();
         }
 
         private void AttemptUseWorld()
         {
-            if (_worlds.Have(_worldId))
-                ConstructEntity(_worlds.Get(_worldId));
+            if (_worldContainer.Have(_worldId))
+                ConstructEntity(_worldContainer.Get(_worldId));
             else
             {
-                _worlds.Created += OnWorldCreated;
+                _worldContainer.Created += OnWorldCreated;
                 WorldsInstance.Disposed += OnWorldsDisposed;
             }
         }
@@ -43,14 +43,14 @@
         {
             if (world.Id != _worldId)
                 return;
-            _worlds.Created -= OnWorldCreated;
+            _worldContainer.Created -= OnWorldCreated;
             WorldsInstance.Disposed -= OnWorldsDisposed;
             ConstructEntity(world);
         }
 
-        private void OnWorldsDisposed(IWorlds worlds)
+        private void OnWorldsDisposed(IWorlds worldContainer)
         {
-            _worlds.Created -= OnWorldCreated;
+            _worldContainer.Created -= OnWorldCreated;
             WorldsInstance.Disposed -= OnWorldsDisposed;
             WorldsInstance.Constructed += OnWorldsConstructed;
         }
@@ -64,11 +64,11 @@
                 Destroy(gameObject);
         }
 
-        private void AddComponents(IPools pools, int entity)
+        private void AddComponents(IPools poolContainer, int entity)
         {
             var components = new System.ReadOnlySpan<IComponentProvider>(GetComponents<IComponentProvider>());
             foreach (var component in components)
-                component.CreateComponent(pools, entity);
+                component.CreateComponent(poolContainer, entity);
         }
     }
 }
