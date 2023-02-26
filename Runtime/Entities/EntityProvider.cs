@@ -5,39 +5,54 @@
     /// </summary>
     public sealed class EntityProvider : UnityEngine.MonoBehaviour
     {
-        [UnityEngine.SerializeField] private int _worldIndex;
+        [UnityEngine.SerializeField] private int _worldId;
         [UnityEngine.SerializeField] private bool _isDestroyingAfter;
+
+        private IWorlds _worlds;
 
         private void Start()
         {
             if (WorldsInstance.TryGet(out var worlds))
-                AttemptUseWorld((Worlds)worlds);
+            {
+                _worlds = worlds;
+                AttemptUseWorld();
+            }
             else
                 WorldsInstance.Constructed += OnWorldsConstructed;
         }
 
-        private void OnWorldsConstructed(Worlds worlds)
+        private void OnWorldsConstructed(IWorlds worlds)
         {
             WorldsInstance.Constructed -= OnWorldsConstructed;
-            AttemptUseWorld(worlds);
+            _worlds = worlds;
+            AttemptUseWorld();
         }
 
-        private void AttemptUseWorld(Worlds worlds)
+        private void AttemptUseWorld()
         {
-            var worldsAsSpan = worlds.GetWorlds();
-            if (_worldIndex < worldsAsSpan.Length)
-                ConstructEntity(worldsAsSpan[_worldIndex]);
+            if (_worlds.Have(_worldId))
+                ConstructEntity(_worlds.Get(_worldId));
             else
-                worlds.Created += OnWorldCreated;
+            {
+                _worlds.Created += OnWorldCreated;
+                WorldsInstance.Disposed += OnWorldsDisposed;
+            }
         }
 
-        private void OnWorldCreated(BoxedWorld world)
+        private void OnWorldCreated(IWorld world)
         {
-            if (world.Index != _worldIndex)
+            if (world.Id != _worldId)
                 return;
+            _worlds.Created -= OnWorldCreated;
+            WorldsInstance.Disposed -= OnWorldsDisposed;
+            ConstructEntity(world);
+        }
 
-            ((Worlds)WorldsInstance.Get()).Created -= OnWorldCreated;
-            ConstructEntity(world.World);
+        private void OnWorldsDisposed(IWorlds worlds)
+        {
+            _worlds.Created -= OnWorldCreated;
+            WorldsInstance.Disposed -= OnWorldsDisposed;
+            WorldsInstance.Constructed += OnWorldsConstructed;
         }
 
         private void ConstructEntity(IWorld world)
@@ -45,7 +60,6 @@
             var pools = world.Pools;
             var entity = world.Entities.Create();
             AddComponents(pools, entity);
-
             if (_isDestroyingAfter)
                 Destroy(gameObject);
         }
